@@ -1,0 +1,208 @@
+<!doctype html>
+<html>
+
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+<style>
+    :root {
+      --main-bg-color: #fff;
+      --item-bg-color: #eaeaea;
+      --main-txt-color: blue;
+      --wpx: calc(100vw / 375);
+    }
+    html, body, div, li, ul, p, span {
+        padding:0;
+        margin: 0;
+        border: 0 solid #fff;
+    }
+    
+    #app {
+        width: 100vw;
+        min-height: 96vh;
+        background: var(--main-bg-color);
+        padding-top: calc(4 * var(--wpx));
+    }
+    .item {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin: 0 calc(4 * var(--wpx)) calc(4 * var(--wpx)) calc(4 * var(--wpx));
+        padding: calc(4 * var(--wpx));
+        border-radius: calc(6 * var(--wpx));
+        background: var(--item-bg-color);
+    }
+    .item .icon {
+        width: calc(40 * var(--wpx));
+        height: calc(40 * var(--wpx));
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: calc(40 * var(--wpx));
+        font-weight: 600;
+        color: #909090;
+        /* background-color: red; */
+    }
+    .item .info {
+        display: flex;
+        justify-content: flex-start;
+        flex-direction: column;
+        margin-left: calc(10 * var(--wpx));
+        width: calc(309 * var(--wpx));
+    }
+    .item .info .title {
+        font-size: calc(18 * var(--wpx));
+        font-weight: 600;
+        color: #454545;
+    }
+    .item .info .description {
+        font-size: calc(16 * var(--wpx));
+        font-weight: 400;
+        color: #454545;
+    }
+    .item .info .link {
+        font-size: calc(16 * var(--wpx));
+        font-weight: 400;
+        color: #597ec9;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    .item .info .link a {
+        font-size: calc(16 * var(--wpx));
+        font-weight: 400;
+        color: #a1b9ee;
+        text-decoration: none;
+    }
+</style>
+</head>
+
+<body>
+    <div id="app">
+
+    </div>
+    <script>
+        
+        
+        class DomRender {
+            constructor() {
+                this.innerData = {};
+                this.data = null;
+                this.init();
+                this.flashId = null
+            }
+            
+            init () {
+                const _this  = this
+                this.data = new Proxy(_this, {
+                    get(target, key) {
+                        return target[key]
+                    },
+                    set(target, key, val) {
+                        target[key] = val
+                        // const old = _this.innerData
+                        _this.innerData[key] = val
+                        if (_this.flashId) {
+                            clearTimeout(_this.flashId)
+                        }
+                        _this.flashId = setTimeout(() => {
+                            return _this.render.bind(_this)()
+                        }, 0)
+                        return true;
+                    }
+                });
+
+            }
+            
+            update() {
+                const newData = this.getData()
+                Object.keys(newData).forEach(key => {
+                    this.data[key] = newData[key]
+                })
+            }
+            
+            render () {
+                if (!this.innerData) {
+                    return
+                }
+                this.flashId = null
+                const renderData = Array.from({...this.innerData, length: Object.keys(this.innerData).length})
+                const htmlContent = renderData.map((dataItem = {}, index) => this.getTemplate(dataItem)).join('');
+                
+                const app = document.getElementById('app');
+                app.innerHTML = htmlContent
+            }
+            
+            getTemplate(data = {}) {
+                const {title = '', githubLink = '', projectLink = '', icon = '', description = ''} = data
+                const template = `
+                    <div class="item">
+                        <div class="icon">
+                            ${icon}
+                        </div>
+                        <div class="info">
+                            <div class="title">
+                                ${title}
+                            </div>
+                            <div class="description">
+                                ${description}
+                            </div>
+                            <div class="link">
+                                项目代码: <a href="${githubLink}">${githubLink.slice(27)} </a>
+                            </div> 
+                            <div class="link">
+                                在线地址: <a href="${projectLink}">${projectLink.slice(8, -1)} </a>
+                            </div> 
+                        </div>
+                    </div>
+                `
+                return template
+            }
+            
+            getData () {
+                // console.log('getData', this)
+                const data = [
+                    {
+                        icon: 'A',
+                        title: '长生疫苗流向与数据可视化',
+                        description: '基于D3和React对长生疫苗的数量和流向可视化展示',
+                        githubLink: 'https://github.com/massyao/china-invalid-vaccine-flow',
+                        projectLink: 'https://allen-tse.space/vaccine/'
+                    },
+                    {
+                        icon: 'B',
+                        title: '实时分享屏幕或视频聊天',
+                        description: '基于webRTC实现的可以实时分享屏幕或者视频聊天的网页应用',
+                        githubLink: 'https://github.com/massyao/realtimeChat',
+                        projectLink: 'https://allen-tse.space/chat/'
+                    },
+                    {
+                        icon: 'C',
+                        title: '星系演化模拟',
+                        description: '基于canvas绘图与牛顿定律模拟星系演化',
+                        githubLink: 'https://github.com/massyao/Chaotic-Galaxy',
+                        projectLink: 'https://allen-tse.space/galaxy/'
+                    },
+                    {
+                        icon: 'D',
+                        title: '推特实时数据的地理可视化展示',
+                        description: '基于推特数据API与D3以地理可视化的方式展示实时推文消息',
+                        githubLink: 'https://github.com/massyao/GlobeEye',
+                        projectLink: 'https://allen-tse.space/globeEye/'
+                    },
+                ]
+                return data
+            }
+        }
+        
+
+        
+        window.onload = new DomRender().update()
+    
+    
+    </script>
+
+</body>
+
+</html>
